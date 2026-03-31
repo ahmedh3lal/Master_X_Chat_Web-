@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile</title>
+
+<style>
+    body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:'Segoe UI',sans-serif;
+    background: linear-gradient(135deg,#2c2f4a 50%, #ff2e4c 50%);
+}
+
+/* الكارد */
+.container {
+    width: 90%;
+    max-width: 420px;
+    background:#f5f7fb;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.2);
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+/* العنوان */
+h2 {
+    text-align:center;
+    color:white;
+    position:absolute;
+    top:30px;
+}
+
+/* الصورة */
+.container img {
+    width:110px;
+    height:110px;
+    border-radius:50%;
+    object-fit:cover;
+    margin:auto;
+    border:4px solid #ff2e4c;
+    transition:0.3s;
+}
+
+.container img:hover {
+    transform: scale(1.05);
+}
+
+/* inputs */
+.container input, .container select {
+    padding:12px;
+    border-radius:12px;
+    border:1px solid #ddd;
+    outline:none;
+    transition:0.2s;
+}
+
+.container input:focus, .container select:focus {
+    border-color:#ff2e4c;
+    box-shadow:0 0 5px rgba(255,46,76,0.3);
+}
+
+/* زرار */
+.container button {
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    background:#ff2e4c;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.container button:hover {
+    background:#e02640;
+    transform: translateY(-2px);
+}
+
+/* input file */
+.container input[type="file"] {
+    background:#fff;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+    <h2>My Profile</h2>
+
+    <img id="profileImg" src="https://via.placeholder.com/150" alt="Profile Image">
+
+    <input type="text" id="name" placeholder="Name">
+    <input type="email" id="email" placeholder="Email">
+    <input type="text" id="phone" placeholder="Phone">
+    <input type="password" id="password" placeholder="Password">
+
+    <select id="gender">
+        <option value="">Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+    </select>
+
+    <input type="date" id="birthdate" placeholder="Birthdate">
+
+    <input type="file" id="image" accept="image/*">
+
+    <button id="updateBtn">Update Profile</button>
+</div>
+
+<script>
+document.getElementById("updateBtn").addEventListener("click", function () {
+
+    let name = document.getElementById("name").value.trim();
+    let email = document.getElementById("email").value.trim();
+    let phone = document.getElementById("phone").value.trim();
+    let password = document.getElementById("password").value.trim();
+    let gender = document.getElementById("gender").value;
+    let birthdate = document.getElementById("birthdate").value;
+    let imageFile = document.getElementById("image").files[0];
+
+    if (!name || !email || !phone) {
+        alert("Fill required fields");
+        return;
+    }
+
+    const sendUpdate = (base64Image) => {
+        fetch("http://localhost:5064/api/User/Update", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                _ID: currentUser._ID,
+                _Name: name,
+                _Email: email,
+                _Phone: phone,
+                _Password: password,
+                Gender: gender,
+                BirthDate: birthdate,
+                _Image: base64Image
+            })
+        })
+        .then(res => res.json())
+        .then(data => window.location.href = `index.html`)
+        .catch(err => { console.error(err); alert("Update failed ❌"); });
+    };
+
+    if (imageFile) {
+        let reader = new FileReader();
+        reader.onload = function () {
+            let base64Image = reader.result.split(',')[1];
+            sendUpdate(base64Image);
+        };
+        reader.readAsDataURL(imageFile);
+    } else {
+        sendUpdate(null);
+    }
+});
+
+let currentUser = null;
+
+// 🟢 Get userId from URL
+const params = new URLSearchParams(window.location.search);
+const userId = params.get("userId");
+console.log("User ID from URL:", userId);
+
+// 🟢 Fetch user data
+fetch(`http://localhost:5064/api/User/getuser?id=${userId}`)
+    .then(res => res.json())
+    .then(user => {
+        currentUser = user;
+        
+        document.getElementById("name").value = user._Name || "";
+        document.getElementById("email").value = user._Email || "";
+        document.getElementById("phone").value = user._Phone || "";
+        document.getElementById("gender").value = user.Gender || "";
+        document.getElementById("birthdate").value = user.BirthDate || "";
+
+        if (user._Image && typeof user._Image === "string") {
+            document.getElementById("profileImg").src = "data:image/jpeg;base64," + user._Image;
+        }
+    })
+    .catch(err => console.error("Error:", err));
+
+document.getElementById("image").addEventListener("change", function(e){
+    const file = e.target.files[0];
+    if(file){
+        document.getElementById("profileImg").src = URL.createObjectURL(file);
+    }
+});
+</script>
+</body>
+</html>

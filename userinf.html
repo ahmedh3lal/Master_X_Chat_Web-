@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile</title>
+<style>
+    body {
+        margin:0;
+        min-height:100vh;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        font-family:'Segoe UI',sans-serif;
+        background: linear-gradient(135deg,#2c2f4a 50%, #ff2e4c 50%);
+    }
+
+    /* الكارد */
+    .container {
+        width: 90%;
+        max-width: 600px;
+        background:#f5f7fb;
+        border-radius:25px;
+        padding:60px 30px 30px; /* top padding أكبر للصورة */
+        box-shadow:0 25px 50px rgba(0,0,0,0.2);
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:20px;
+        position: relative;
+    }
+/* الصورة */
+.profile-img {
+    width: 300px;          /* عرض أكبر */
+    height: 300px;         /* ارتفاع متناسق */
+    border-radius: 15px;   /* حواف ناعمة بدل الدائري */
+    object-fit: cover;
+    border: 6px solid #f62525;
+    position: absolute;
+    top: -150px;           /* تطفو فوق الكارد */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    cursor: pointer;
+}
+
+.profile-img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+/* الكارد */
+.container {
+    padding: 120px 30px 30px; /* مساحة كافية للصورة */
+    position: relative;
+    width: 90%;
+    max-width: 600px;
+    background: #f5f7fb;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+/* الاسم */
+    h2 {
+        margin-top:80px; /* مساحة تحت الصورة */
+        font-size:24px;
+        color:#2c2f4a;
+    }
+
+    /* المعلومات */
+    .info-grid {
+        width:100%;
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:15px;
+    }
+
+    /* الكروت */
+    .info-card {
+        background:#fff;
+        padding:15px 20px;
+        border-radius:15px;
+        box-shadow:0 5px 20px rgba(0,0,0,0.08);
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor:default;
+    }
+
+    .info-card:hover {
+        transform: translateY(-5px);
+        box-shadow:0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    /* العناوين */
+    .info-card span:first-child {
+        font-size:13px;
+        color:#888;
+    }
+
+    /* القيم */
+    .info-card span:last-child {
+        font-weight:bold;
+        color:#333;
+        font-size:15px;
+    }
+
+    /* موبايل */
+    @media(max-width:600px){
+        .info-grid {
+            grid-template-columns:1fr;
+        }
+
+        .profile-img {
+            top:-70px;
+            width:120px;
+            height:120px;
+        }
+
+        h2 {
+            margin-top:70px;
+            font-size:22px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <img id="profileImg" class="profile-img" src="https://via.placeholder.com/150" alt="Profile Image">
+    <h2 id="name">-</h2>
+
+    <div class="info-grid">
+        <div class="info-card"><span>Email:</span> <span id="email">-</span></div>
+        <div class="info-card"><span>Phone:</span> <span id="phone">-</span></div>
+        <div class="info-card"><span>Gender:</span> <span id="gender">-</span></div>
+        <div class="info-card"><span>Age:</span> <span id="age">-</span></div>
+    </div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const userId = params.get("idofprof");
+
+fetch(`http://localhost:5064/api/User/getuser?id=${userId}`)
+    .then(res => res.json())
+    .then(user => {
+        document.getElementById("name").innerText = user._Name || "-";
+        document.getElementById("email").innerText = user._Email || "-";
+        document.getElementById("phone").innerText = user._Phone || "-";
+        document.getElementById("gender").innerText = user.gender || "-";
+
+        // حساب العمر
+        if(user.birthDate) {
+            const birthDate = new Date(user.birthDate);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+            document.getElementById("age").innerText = age;
+        } else {
+            document.getElementById("age").innerText = "-";
+        }
+
+        // الصورة
+        if (user._Image && typeof user._Image === "string") {
+            document.getElementById("profileImg").src = "data:image/jpeg;base64," + user._Image;
+        }
+    })
+    .catch(err => console.error("Error:", err));
+</script>
+
+</body>
+</html>

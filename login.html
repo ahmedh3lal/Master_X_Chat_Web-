@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login / Register</title>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<style>
+body{
+    margin:0;
+    height:100vh;
+    font-family:Segoe UI;
+    display:flex;
+}
+
+/* LEFT SIDE */
+.left{
+    width:50%;
+    background: linear-gradient(135deg,#ff2e4c,#7b2ff7);
+    color:white;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:60px;
+}
+
+.left h1{font-size:50px;margin-bottom:20px;}
+.left p{max-width:400px;line-height:1.6;}
+
+/* RIGHT SIDE */
+.right{
+    width:50%;
+    background:#f5f7fb;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+}
+
+.right::before{
+    content:"";
+    position:absolute;
+    left:-100px;
+    top:0;
+    width:200px;
+    height:100%;
+    background:#f5f7fb;
+    border-radius:50%;
+}
+
+.container{width:350px;}
+
+h2{text-align:center;margin-bottom:20px;}
+
+input, select, button{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border-radius:10px;
+    border:1px solid #ddd;
+    outline:none;
+}
+
+input:focus{
+    border-color:#ff2e4c;
+    box-shadow:0 0 5px rgba(255,46,76,0.3);
+}
+
+button{
+    background:#ff2e4c;
+    color:white;
+    border:none;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{background:#e02640;}
+
+.switch{
+    text-align:center;
+    margin-top:10px;
+    cursor:pointer;
+    color:#ff2e4c;
+    font-size:13px;
+}
+
+.hidden{display:none;}
+
+.row{
+    display:flex;
+    gap:5px;
+}
+
+.row button{
+    width:120px;
+}
+
+/* Responsive */
+@media(max-width:900px){
+    .left{display:none;}
+    .right{width:100%;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="left">
+    <h1>LOGO</h1>
+    <p>Welcome to our platform. Sign in or register to continue.</p>
+</div>
+
+<div class="right">
+
+<div class="container">
+
+<!-- LOGIN -->
+<div id="loginForm">
+    <h2>Sign In</h2>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button onclick="loginUser()">Login</button>
+    <div class="switch" onclick="showRegister()">Don't have an account? Register</div>
+</div>
+
+<!-- REGISTER -->
+<div id="registerForm" class="hidden">
+    <h2>Register</h2>
+
+    <input type="text" id="regName" placeholder="Name">
+
+    <!-- EMAIL + SEND CODE -->
+    <div class="row">
+        <input type="email" id="regEmail" placeholder="Email">
+        <button type="button" onclick="sendCode()">Send</button>
+    </div>
+
+    <!-- VERIFY CODE -->
+    <div class="row">
+        <input type="text" id="codeInput" placeholder="Code">
+        <button type="button" onclick="verifyCode()">Verify</button>
+    </div>
+
+    <input type="password" id="regPassword" placeholder="Password">
+    <input type="text" id="regPhone" placeholder="Phone">
+
+    <select id="regGender">
+        <option value="">Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+    </select>
+
+    <input type="date" id="regBirthdate">
+    <input type="file" id="regImage">
+
+    <button onclick="registerUser()">Register</button>
+    <div class="switch" onclick="showLogin()">Already have account? Login</div>
+</div>
+
+</div>
+</div>
+
+<script>
+
+let isVerified = false;
+
+// SWITCH
+function showRegister(){
+    $("#loginForm").hide();
+    $("#registerForm").show();
+}
+function showLogin(){
+    $("#registerForm").hide();
+    $("#loginForm").show();
+}
+
+// LOGIN
+function loginUser(){
+    let email = $("#loginEmail").val().trim();
+    let password = $("#loginPassword").val().trim();
+
+    if(!email || !password){
+        alert("Enter email and password");
+        return;
+    }
+
+    $.ajax({
+        url:"http://localhost:5064/api/Auth/Login",
+        type:"POST",
+        contentType:"application/json",
+        data: JSON.stringify({
+            _Name:"",
+            _Email: email,
+            _Password: password
+        }),
+        success:function(res){
+            if(!res.user){ alert("Login failed ❌"); return; }
+
+            localStorage.setItem("user", res.user._Name);
+            localStorage.setItem("id", res.user._ID);
+
+            window.location.href="index.html";
+        },
+        error:function(){
+            alert("Login failed ❌");
+        }
+    });
+}
+
+// SEND CODE
+function sendCode(){
+    let email = $("#regEmail").val().trim();
+
+    if(!email){
+        alert("Enter email first");
+        return;
+    }
+
+    $.ajax({
+        url:"http://localhost:5064/api/Auth/send-code",
+        type:"POST",
+        contentType:"application/json",
+        data: JSON.stringify({ email }),
+        success:function(){
+            alert("Verification code sent 📧");
+        },
+        error:function(){
+            alert("Error sending code ❌");
+        }
+    });
+}
+
+// VERIFY CODE
+function verifyCode(){
+    let email = $("#regEmail").val().trim();
+    let code = $("#codeInput").val().trim();
+
+    if(!code){
+        alert("Enter code");
+        return;
+    }
+
+    $.ajax({
+        url:"http://localhost:5064/api/Auth/verify-code",
+        type:"POST",
+        contentType:"application/json",
+        data: JSON.stringify({  code }),
+        success:function(res){
+            if(res.success){
+                alert("Email Verified ✅");
+                isVerified = true;
+            }else{
+                alert("Wrong code ❌");
+            }
+        }
+    });
+}
+
+// REGISTER
+function registerUser(){
+
+    if(!isVerified){
+        alert("Verify email first ❗");
+        return;
+    }
+
+    let name = $("#regName").val().trim();
+    let email = $("#regEmail").val().trim();
+    let password = $("#regPassword").val().trim();
+    let phone = $("#regPhone").val().trim();
+    let gender = $("#regGender").val();
+    let birthdate = $("#regBirthdate").val();
+    let imageFile = $("#regImage")[0].files[0];
+
+    if(!name || !email || !password || !phone || !gender || !birthdate){
+        alert("Fill all fields");
+        return;
+    }
+
+    let sendData = (img)=>{
+        $.ajax({
+            url:"http://localhost:5064/api/Auth/Register",
+            type:"POST",
+            contentType:"application/json",
+            data: JSON.stringify({
+                _Name:name,
+                _Email:email,
+                _Password:password,
+                _Phone:phone,
+                Gender:gender,
+                BirthDate:birthdate,
+                _Image:img
+            }),
+            success:function(){
+                alert("Registered Successfully ✅");
+                showLogin();
+            },
+            error:function(){
+                alert("Register failed ❌");
+            }
+        });
+    };
+
+    if(imageFile){
+        let reader = new FileReader();
+        reader.onload = ()=> sendData(reader.result.split(',')[1]);
+        reader.readAsDataURL(imageFile);
+    } else {
+        sendData(null);
+    }
+}
+
+</script>
+
+</body>
+</html>

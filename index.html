@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Chat</title>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.7/signalr.min.js"></script>
+
+<style>
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:'Segoe UI',sans-serif;
+    background: linear-gradient(135deg,#2c2f4a 50%, #ff2e4c 50%);
+}
+.wrapper{
+    width:95%;
+    height:90vh;
+    background:#f5f7fb;
+    border-radius:20px;
+    display:flex;
+    overflow:hidden;
+    box-shadow:0 20px 40px rgba(0,0,0,0.2);
+}
+.sidebar{
+    width:280px;
+    background:#fff;
+    border-right:1px solid #ddd;
+    padding:15px;
+    display:flex;
+    flex-direction:column;
+}
+.search-container{
+    position:relative;
+    margin-bottom:15px;
+}
+.search-container input{
+    width:80%;
+    padding:10px 35px 10px 15px;
+    border-radius:25px;
+    border:1px solid #ccc;
+}
+.search-icon{
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+}
+#users{
+    list-style:none;
+    padding:0;
+    overflow-y:auto;
+}
+#users li{
+    display:flex;
+    align-items:center;
+    padding:10px;
+    margin-bottom:8px;
+    border-radius:12px;
+    background:#fff;
+    cursor:pointer;
+}
+#users li:hover{background:#f0f0f0;}
+.status-dot{
+    width:10px;height:10px;border-radius:50%;margin-right:10px;
+}
+.status-online{background:#2ecc71;}
+.status-offline{background:#bbb;}
+
+.chat{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    padding:15px;
+}
+#chatWith{
+    background:#fff;
+    padding:10px;
+    border-radius:10px;
+    margin-bottom:10px;
+}
+.messages{
+    flex:1;
+    overflow-y:auto;
+}
+.message{
+    max-width:60%;
+    padding:10px;
+    border-radius:15px;
+    margin:8px 0;
+}
+.me{background:#ff2e4c;color:#fff;margin-left:auto;}
+.them{background:#fff;}
+.message-time{font-size:10px;opacity:.6;margin-top:5px;}
+
+.input-area{
+    display:flex;
+    background:#fff;
+    border-radius:30px;
+    padding:5px;
+}
+.input-area input{
+    flex:1;
+    border:none;
+    outline:none;
+    padding:10px;
+}
+.input-area button{
+    border:none;
+    background:#ff2e4c;
+    color:white;
+    border-radius:50%;
+    width:45px;height:45px;
+}
+
+/* ديف الشات نفسه */
+.chat {
+    position: relative; /* مهم جدًا */
+}
+
+/* الإشعار */
+.notif {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* السهم */
+#icon {
+    width: 26px;
+    height: 26px;
+    stroke: #000;
+    transition: 0.2s;
+}
+
+#icon:hover {
+    transform: scale(1.15);
+    stroke: #0095f6;
+}
+
+/* البادج */
+.badge {
+    position: absolute;
+    top: -9px;
+    right: -8px;
+     background: #ff3040;
+    color: white;
+  font-size: 14px;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 60%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    
+}
+
+/* الظهور */
+.badge.show {
+    transform: scale(1);
+}
+
+
+/* كل عنصر إشعار */
+#not li {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    margin: 5px 8px;
+    border-radius: 8px;
+    background: #f5f5f5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+/* تأثير hover */
+#not li:hover {
+    background: #ff2e4c;
+    color: #fff;
+    transform: translateX(3px);
+}
+
+/* صورة المستخدم */
+#not li img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+}
+
+/* نص الإشعار */
+#not li span {
+    flex: 1;
+}
+
+/* النقطة الصغيرة لتمييز جديد */
+#not li::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #ff3040;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+#not li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#not li div {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+}
+
+.chat-header img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.chat-header .name {
+    font-weight: bold;
+    font-size: 15px;
+}
+.input-area{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    padding:10px;
+    border-top:1px solid #ccc;
+}
+
+.input-area input{
+    flex:1;
+    padding:10px;
+    border-radius:20px;
+    border:1px solid #ccc;
+    outline:none;
+}
+
+.input-area button{
+    border:none;
+    background:#2f80ed;
+    color:white;
+    padding:10px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:16px;
+    transition:0.2s;
+}
+
+.input-area button:hover{
+    background:#1366d6;
+}
+
+
+.profile{
+    width:280px;
+    background: #ffffff;
+    text-align:center;
+    padding:25px 20px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
+    transition:0.3s;
+    font-family:'Segoe UI', sans-serif;
+}
+
+.profile:hover{
+    transform: translateY(-5px);
+}
+
+
+.profile img{
+    width:100%;
+    height:60%;
+    border-radius:15px;
+    object-fit:cover;
+    margin-bottom:15px;
+}
+/* الاسم */
+.profile h3{
+    margin:10px 0 5px;
+    font-size:20px;
+    color:#333;
+}
+
+/* باقي البيانات */
+.profile p{
+    margin:6px 0;
+    font-size:14px;
+    color:#777;
+}
+
+/* زرار */
+.profile button{
+    margin-top:15px;
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    background: linear-gradient(135deg,#4facfe,#00f2fe);
+    color:#fff;
+    font-size:14px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.profile button:hover{
+    opacity:0.85;
+}
+
+
+
+.message-meta{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    color:#888;
+}
+
+.status{
+    font-size:14px;
+}
+
+.status .read{
+    color:#0095f6; /* أزرق */
+}
+
+.user-menu{
+    position:absolute;
+    top:15px;
+    right:15px;
+    z-index:1000;
+}
+
+/* صورة اليوزر */
+#userIcon{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    cursor:pointer;
+    border:2px solid #fff;
+    box-shadow:0 5px 15px rgba(0,0,0,0.2);
+    transition:0.2s;
+}
+
+#userIcon:hover{
+    transform:scale(1.05);
+}
+
+/* القائمة */
+.dropdown{
+    position:absolute;
+    top:55px;
+    right:0; /* مهم جدًا بدل left */
+    width:220px;
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 15px 35px rgba(0,0,0,0.2);
+    display:none;
+    overflow:hidden;
+    animation:fadeIn 0.2s ease;
+}
+
+/* معلومات */
+.user-info{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px;
+}
+
+.user-info img{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+}
+
+/* العناصر */
+.menu-item{
+    padding:12px;
+    cursor:pointer;
+    transition:0.2s;
+    font-size:14px;
+}
+
+.menu-item:hover{
+    background:#f0f0f0;
+}
+
+/* logout */
+.logout{
+    color:#ff3040;
+    font-weight:bold;
+}
+
+/* خط فاصل */
+.dropdown hr{
+    margin:5px 0;
+    border:none;
+    height:1px;
+    background:#eee;
+}
+
+/* animation */
+@keyframes fadeIn{
+    from{opacity:0; transform:translateY(-10px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+#emogan.pulse{
+    animation:pulse 0.6s ease;
+}
+
+@keyframes pulse{
+    0%{
+        box-shadow:0 0 0 rgba(255,0,0,0.5);
+    }
+    50%{
+        box-shadow:0 0 20px rgba(255,0,0,0.9);
+    }
+    100%{
+        box-shadow:0 0 0 rgba(255,0,0,0.5);
+    }
+}
+
+</style>
+
+
+</head>
+
+<body>
+
+
+<div class="wrapper">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    
+    <div class="search-container">
+        <input type="text" id="searchUser" placeholder="Search users...">
+    </div>
+    <ul id="users"></ul>
+</div>
+
+<!-- CHAT -->
+<div class="chat">
+    <div id="chatWith" class="chat-header"></div>
+    <div class="messages" id="messages"></div>
+
+      <div class="input-area">
+    <input id="msg" placeholder="Type message...">
+
+    <!-- Buttons -->
+    <button onclick="sendMessage()">➤</button>
+    <button onclick="attachFile()">📎</button>
+    <button onclick="recordVoice()">🎤</button>
+
+    <!-- Hidden file input -->
+    <input type="file" id="fileInput" style="display:none;" onchange="handleFile(event)">
+</div>
+
+    <div class="notif">
+            <svg id="icon" xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" width="26" height="26" 
+                fill="none" stroke="black" stroke-width="2">
+                
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+           <ul id="not" style="display: none;"></ul>
+    <span class="badge" id="count"></span>
+
+</div>
+</div>
+
+
+<div class="profile" id="profile">
+    <img id="profileImg">
+
+    <h3 id="profileName"></h3>
+    <p id="profileEmail"></p>
+    <p id="profilePhone"></p>
+    <p id="profileGender"></p>
+    <p id="profileAge"></p>
+    <p id="profileLastSeen"></p>
+
+</div>
+
+
+
+<div class="user-menu">
+    <img id="userIcon" src="https://i.pravatar.cc/40" onclick="toggleMenu()">
+
+    <div class="dropdown" id="dropdownMenu">
+        <div class="user-info">
+            <img id="img" src="https://i.pravatar.cc/40">
+            <span id="username"></span>
+        </div>
+
+        <hr>
+
+        <div class="menu-item" onclick="updateinfo()">
+            👤Update Profile
+        </div>
+
+        <div class="menu-item logout" onclick="logout()">
+            🚪 Logout
+        </div>
+    </div>
+</div>
+<script>
+    fetch(`http://localhost:5064/api/User/getuser?id=${localStorage.getItem("id")}`)
+.then(res=>res.json())
+.then(user=>{
+    $("#username").text(user._Name);
+   
+    if(user._Image){
+        $("#userIcon").attr("src","data:image/jpeg;base64,"+user._Image);
+        $("#img").attr("src","data:image/jpeg;base64,"+user._Image);
+    }
+    
+    $("#img").on("click", function () {
+       window.location.href = `userinf.html?idofprof=${user._ID}`;
+    });
+
+  
+});
+</script>
+
+<script>
+    function toggleMenu(){
+    let menu = document.getElementById("dropdownMenu");
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+}
+
+// تقفل لما تدوس بره
+document.addEventListener("click", function(e){
+    let menu = document.getElementById("dropdownMenu");
+    let icon = document.getElementById("userIcon");
+
+    if(!icon.contains(e.target) && !menu.contains(e.target)){
+        menu.style.display = "none";
+    }
+});
+
+
+</script>
+
+<script>
+   
+function attachFile(){
+    document.getElementById("fileInput").click();
+}
+
+function handleFile(event){
+    let file = event.target.files[0];
+    if(!file) return;
+    // هنا تبعت الملف للسيرفر
+}
+
+// Record voice
+let mediaRecorder, audioChunks = [];
+function recordVoice(){
+    if(mediaRecorder && mediaRecorder.state === "recording"){
+        mediaRecorder.stop(); // stop recording
+        return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ audio:true })
+        .then(stream=>{
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = e => {
+                const audioBlob = new Blob(audioChunks, { type:"audio/mp3" });
+                console.log("Voice recorded:", audioBlob);
+                // هنا تبعت الصوت للسيرفر
+            };
+
+            mediaRecorder.start();
+            console.log("Recording started... click again to stop");
+        })
+        .catch(err => alert("Microphone access denied 🔴"));
+}
+</script>
+<script>
+let count = 0;
+
+async function loadUser(senderId) {
+    try {
+        let res = await fetch(`http://localhost:5064/api/User/getuser?id=${senderId}`);
+        let user = await res.json();
+        console.log(user);
+
+    } catch (err) {
+        console.error("Error loading notifications:", err);
+    }
+}
+
+function updateBadge() {
+    const badge = document.getElementById("count");
+    if (count > 0) {
+        badge.style.display = "block";
+      
+        badge.innerText = count > 99 ? "99+" : count;
+    } else {
+        badge.style.display = "none";
+    }
+    if (count <= 0) {
+    document.getElementById("icon").style.display = "none";
+    document.querySelector(".badge").style.display = "none";
+}
+}
+function addNotification(msg) {
+    count++;
+
+    const icon = document.getElementById("icon");
+    icon.style.display = "block";
+
+    const not = document.getElementById("not");
+
+    const li = document.createElement("li");
+
+    // 🔹 صورة البروفايل
+    const img = document.createElement("img");
+     const user = allUsers.find(u => u._ID == msg.senderid);
+    
+    img.src = user && user._Image 
+        ? `data:image/jpeg;base64,${user._Image}` 
+        : "https://i.pravatar.cc/35";
+
+    const content = document.createElement("div");
+
+    const name = document.createElement("div");
+    name.textContent = user ? user._Name : "Unknown";
+    name.style.fontWeight = "bold";
+    name.style.fontSize = "13px";
+
+    const text = document.createElement("div");
+    text.textContent = msg.text;
+    text.style.fontSize = "12px";
+    text.style.color = "#555";
+
+    content.appendChild(name);
+    content.appendChild(text);
+
+    li.appendChild(img);
+    li.appendChild(content);
+
+    // 🔥 مهم
+    li.setAttribute("data-id", msg.senderid);
+    li.setAttribute("data-notid", msg.notID);
+
+    li.onclick = function () {
+        const id = this.getAttribute("data-id");
+
+        const user = allUsers.find(u => u._ID == id);
+        if (user) openChat(user);
+
+        const allNot = document.querySelectorAll(`#not li[data-id='${id}']`);
+
+        allNot.forEach(item => {
+            item.remove();
+            count--;
+        });
+
+        updateBadge();
+
+        allNot.forEach(item => {
+            const notId = item.getAttribute("data-notid");
+            if (notId) {
+                updatenotification(notId);
+            }
+        });
+    };
+
+    not.appendChild(li);
+    updateBadge();
+}
+function updatenotification(id) {
+    $.ajax({
+    url: `http://localhost:5064/api/Notification/Updatenotification?id=${id}`,
+    type: "PUT",
+    data: { id: id },
+    success: function (res) {
+       
+    },
+    error: function (err) {
+        console.error("Error updating notification:", err.responseText);
+    }
+});
+}
+function clearNotifications() {
+    count = 0;
+
+    const icon = document.getElementById("icon");
+    const noti = document.getElementById("not");
+    const badge = document.querySelector(".badge"); // لو عندك رقم الإشعارات
+
+    // مسح الإشعارات
+    noti.innerHTML = "";
+    noti.style.display = "none";
+
+    // إخفاء الرقم
+    if (badge) {
+        badge.style.display = "none";
+        badge.textContent = "0";
+    }
+
+    // إخفاء الأيقونة (مش مسحها)
+    icon.style.display = "none";
+}
+
+document.getElementById("icon").onclick = function () {
+       const noti = document.getElementById("not");
+        noti.style.display="block";
+      
+
+   
+    
+};
+// ================= GLOBAL =================
+let connection = null;
+let sender_id = null;
+let recever_id = null;
+let allUsers = [];
+let currentUser = null;
+let isopen=0 ;
+
+function loadnotifications(sender_id ) {
+    $.ajax({
+        url: `http://localhost:5064/api/Notification/NotReadNotification?receverid=${sender_id}`,
+        type: "GET",
+        success: function (res) {
+            
+            res.forEach(addNotification);
+        },
+        error: function (err) {
+            console.error("Error loading notifications:", err.responseText);
+        }
+    });
+}
+
+function formatDate(date){
+    return new Date(date).toLocaleString("en-GB", {
+        year:'numeric',
+        month:'2-digit',
+        day:'2-digit',
+        hour:'2-digit',
+        minute:'2-digit'
+    });
+}
+
+// ================= LOAD USERS =================
+$.ajax({
+    url:"http://localhost:5064/api/User/All",
+    type:"GET",
+    success:function(res){
+        
+        allUsers =  res;
+        renderUsers(allUsers);
+    }
+    
+});
+
+function timeSince(date) {
+    if (!date) return "Offline"; // لو null
+
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+
+    let interval = Math.floor(seconds / 31536000);
+    if (interval >= 1) return interval + " year" + (interval > 1 ? "s" : "") + " ago";
+
+    interval = Math.floor(seconds / 2592000);
+    if (interval >= 1) return interval + " month" + (interval > 1 ? "s" : "") + " ago";
+
+    interval = Math.floor(seconds / 86400);
+    if (interval >= 1) return interval + " day" + (interval > 1 ? "s" : "") + " ago";
+
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) return interval + " hour" + (interval > 1 ? "s" : "") + " ago";
+
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) return interval + " minute" + (interval > 1 ? "s" : "") + " ago";
+
+    return "Just now";
+}
+function formatDateing(dateStr) {
+    if (!dateStr) return null;
+   
+    return dateStr.split('.')[0]; // "2026-03-21T01:28:16.4008557" => "2026-03-21T01:28:16"
+}
+// ================= RENDER USERS (FIXED) =================
+function renderUsers(list){
+    const ul = $("#users");
+    ul.empty();
+
+    list.forEach(user=>{
+
+        let statusClass = user._Online ? "status-online" : "status-offline";
+
+        let userImg = user._Image 
+            ? `data:image/jpeg;base64,${user._Image}`
+            : "https://i.pravatar.cc/40?img=12";
+
+        const li = $(`
+            <li>
+                <img src="${userImg}" style="width:35px;height:35px;border-radius:50%;margin-right:10px;">
+                <span class="status-dot ${statusClass}"></span>
+                ${user._Name}
+              ${user._Online 
+                ? `<span style="font-size:10px;color:green;margin-left:5px;">Online</span>` 
+                : `<span style="font-size:10px;color:#888;margin-left:5px;">${timeSince(formatDateing(user._LastSeen))}</span>`}
+                
+    </li>
+        `  );
+
+        li.on("click",function(){
+            $("#chatWith").text(user._Name);
+            openChat(user);
+        });
+
+        ul.append(li);
+    });
+}
+
+// ================= SEARCH =================
+$("#searchUser").on("input",function(){
+    const q = $(this).val().toLowerCase();
+     renderUsers(allUsers.filter(u=>u._Name.toLowerCase().includes(q)));
+});
+
+
+
+///////////////////////
+
+const ms=null;
+
+// ================= CONNECTION =================
+function startConnection(userName, senderId){
+
+    sender_id = Number(senderId);
+
+    connection = new signalR.HubConnectionBuilder()
+        .withUrl("http://localhost:5064/chatHub?userId="+sender_id)
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("users",function(users){
+        renderUsers(users);
+    });
+   
+    connection.on("receiveMessage", function(_, msg) {
+  
+    connection.invoke("markAsRead", msg.msgid,isopen);
+
+    let cls = msg._SenderID === sender_id ? "me" : "them";
+    if(!senderId||!recever_id) return;
+    if(isopen==msg._SenderID) {
+
+        $("#messages").append(`
+        <div class="message ${cls}">
+            <div>${msg.text}</div>
+            <div class="message-time">${timeSince(formatDateing(msg.sentAt))}</div>
+            </div>
+            `);
+            
+            $("#messages").scrollTop($("#messages")[0].scrollHeight);
+        }
+        });
+    connection.start()
+        .then(()=>connection.invoke("GetUsers"));
+    
+    connection.on("ReceiveNotification", function (msg) {
+        if(msg.senderid!=isopen){
+            addNotification(msg);
+        }
+
+        });
+    
+
+     connection.on("messageRead", function ( message) {
+        const msg=document.getElementById(`msg-${ message._ID}`);
+       
+        msg.querySelector(".status").innerHTML = getStatusIcon( message.status); 
+        
+   });
+   
+
+   
+}
+
+
+function updateinfo(){
+           window.location.href = `Profile.html?userId=${sender_id}`;
+
+}
+
+function loadProfile(user){
+   const prof=document.getElementById("profile");
+    prof.style.display="block";
+    $("#profileName").text(user._Name || "");
+    $("#profileEmail").text(user._Email || "");
+    $("#profilePhone").text(user._Phone || "");
+    $("#profileGender").text(user.gender || "");
+
+    // 🎂 Age
+    if (user.BirthDate) {
+        let birth = new Date(user.BirthDate);
+        let age = new Date().getFullYear() - birth.getFullYear();
+        $("#profileAge").text("Age: " + age);
+    }
+
+    // 🕒 Last Seen
+    if (user._LastSeen) {
+        $("#profileLastSeen").text(
+            "Last Seen: " + timeSince(new Date(user._LastSeen))
+        );
+    }
+
+    // 🖼️ Image
+    if (user._Image) {
+        $("#profileImg").attr("src", `data:image/jpeg;base64,${user._Image}`);
+    } else {
+        $("#profileImg").attr("src", "https://i.pravatar.cc/100");
+    }
+     $("#profileImg").on("click", function () {
+       // console.log("Profile image clicked for user:", user);
+       window.location.href = `userinf.html?idofprof=${user._ID}`;
+    });
+}
+
+function openChat(user){
+    recever_id = user._ID;
+    isopen=user._ID;
+     const imgSrc = user._Image
+        ? `data:image/jpeg;base64,${user._Image}`
+        : "https://i.pravatar.cc/40";
+
+
+    loadProfile(user);
+// $.ajax({
+//     url: `http://localhost:5064/api/Message/updatemessage?id=${sender_id}&receverid=${recever_id}`,
+//     type: "PUT",
+//     headers: {
+//         "Authorization": "Bearer " + localStorage.getItem("token")
+//     },
+//     success: function () {
+       
+//     }
+// });
+    chatWith.innerHTML = `
+        <img src="${imgSrc}" />
+        <div class="name">${user._Name}</div>
+    `;
+
+    $("#chatWith").off("click").on("click", function () {
+       openProfile(recever_id);
+    });
+    $("#messages").empty();
+    
+
+    $.get(`http://localhost:5064/api/User/UserChat?id=${sender_id}&receverId=${recever_id}`,function(res){
+      
+      res.forEach(m => {
+    let cls = m._SenderID === sender_id ? "me" : "them";
+    $("#messages").append(`
+        <div class="message ${cls}">
+            <div>${m.text}</div>
+
+            <div class="message-meta">
+                <span class="message-time">
+                    ${timeSince(formatDateing(m.sentAt))}
+                </span>
+
+                ${cls === "me" ? `
+                    <span class="status">
+                        ${getStatusIcon(m.status)}
+                    </span>
+                ` : ""}
+            </div>
+        </div>
+    `);
+});
+
+        $("#messages").scrollTop($("#messages")[0].scrollHeight);
+         const unreadMessages = res.filter(m => m._SenderID !== sender_id && m.status !== 2 );
+        console.log("Unread messages to mark as read:", unreadMessages);
+         unreadMessages.forEach(msg => {
+            connection.invoke("markAsRead", msg._ID,msg._SenderID); // السيرفر يحدث status = Read ويبلغ الـ sender
+        });
+
+    });
+}
+function getStatusIcon(status){
+    if(status === 0) return "✔";              // Sent
+    if(status === 1)return "<span style='color:black;'>✔✔</span>";           // Delivered
+    if(status === 2) return "<span class='read'>✔✔</span>"; // Read (أزرق)
+    return "";
+}
+function openProfile(userId) {
+    window.location.href = `userinf.html?idofprof=${userId}`;
+}
+
+let msid=null;
+// ================= SEND =================
+function sendMessage() {
+    let msg = $("#msg").val().trim();
+    if (!msg || !recever_id) return;
+    
+    connection.invoke("sendPrivateMessage", sender_id, recever_id, msg)
+        .then((msgId) => {
+            msid=msgId;
+            connection.invoke("createNotification", msgId);
+            
+           $("#messages").append(`
+                <div class="message me" id="msg-${msgId}" data-msgid="${msgId}">
+                    <div>${msg}</div>
+                    <div class="message-meta">
+                        <span class="message-time">${timeSince(new Date())}</span>
+                        <span class="status">${getStatusIcon(status || 0)}</span>
+                    </div>
+                </div>
+            `);
+
+            
+            $("#messages").scrollTop($("#messages")[0].scrollHeight);
+            $("#msg").val("");
+
+            
+        })
+        .catch(err => {
+            console.error("FULL ERROR:", err);
+        });
+}
+
+
+
+
+// ================= PROFILE =================
+
+
+// ================= INIT =================
+$(document).ready(function(){
+
+    let userName = localStorage.getItem("user");
+    let senderId = localStorage.getItem("id");
+
+    if(!userName || !senderId){
+        window.location.href="login.html";
+        return;
+    }
+
+    
+    clearNotifications();
+     const icon = document.getElementById("icon");
+    icon.style.display = "none";
+    const userinf=document.getElementById("profile");
+    userinf.style.display="none";
+    loadnotifications(senderId);
+    startConnection(userName,senderId);
+});
+
+// ================= LOGOUT =================
+function logout(){
+    if(connection) connection.stop();
+    localStorage.clear();
+    window.location.href="login.html";
+}
+
+</script>
+
+
+
+
+</body>
+</html>
