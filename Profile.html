@@ -131,7 +131,7 @@ document.getElementById("updateBtn").addEventListener("click", function () {
     }
 
     const sendUpdate = (base64Image) => {
-        fetch("http://localhost:5064/api/User/Update", {
+        fetch("http://masterx.runasp.net/api/User/Update", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -170,7 +170,7 @@ const userId = params.get("userId");
 console.log("User ID from URL:", userId);
 
 // 🟢 Fetch user data
-fetch(`http://localhost:5064/api/User/getuser?id=${userId}`)
+fetch(`http://masterx.runasp.net/api/User/getuser?id=${userId}`)
     .then(res => res.json())
     .then(user => {
         currentUser = user;
