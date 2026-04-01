@@ -538,7 +538,7 @@ body{
     </div>
 </div>
 <script>
-    fetch(`http://localhost:5064/api/User/getuser?id=${localStorage.getItem("id")}`)
+    fetch(`http://masterx.runasp.net/api/User/getuser?id=${localStorage.getItem("id")}`)
 .then(res=>res.json())
 .then(user=>{
     $("#username").text(user._Name);
@@ -618,7 +618,7 @@ let count = 0;
 
 async function loadUser(senderId) {
     try {
-        let res = await fetch(`http://localhost:5064/api/User/getuser?id=${senderId}`);
+        let res = await fetch(`http://masterx.runasp.net/api/User/getuser?id=${senderId}`);
         let user = await res.json();
         console.log(user);
 
@@ -709,7 +709,7 @@ function addNotification(msg) {
 }
 function updatenotification(id) {
     $.ajax({
-    url: `http://localhost:5064/api/Notification/Updatenotification?id=${id}`,
+    url: `http://masterx.runasp.net/api/Notification/Updatenotification?id=${id}`,
     type: "PUT",
     data: { id: id },
     success: function (res) {
@@ -759,7 +759,7 @@ let isopen=0 ;
 
 function loadnotifications(sender_id ) {
     $.ajax({
-        url: `http://localhost:5064/api/Notification/NotReadNotification?receverid=${sender_id}`,
+        url: `http://masterx.runasp.net/api/Notification/NotReadNotification?receverid=${sender_id}`,
         type: "GET",
         success: function (res) {
             
@@ -783,7 +783,7 @@ function formatDate(date){
 
 // ================= LOAD USERS =================
 $.ajax({
-    url:"http://localhost:5064/api/User/All",
+    url:"http://masterx.runasp.net/api/User/All",
     type:"GET",
     success:function(res){
         
@@ -872,7 +872,7 @@ function startConnection(userName, senderId){
     sender_id = Number(senderId);
 
     connection = new signalR.HubConnectionBuilder()
-        .withUrl("http://localhost:5064/chatHub?userId="+sender_id)
+        .withUrl("http://masterx.runasp.net/chatHub?userId="+sender_id)
         .withAutomaticReconnect()
         .build();
 
@@ -990,7 +990,7 @@ function openChat(user){
     $("#messages").empty();
     
 
-    $.get(`http://localhost:5064/api/User/UserChat?id=${sender_id}&receverId=${recever_id}`,function(res){
+    $.get(`http://masterx.runasp.net/api/User/UserChat?id=${sender_id}&receverId=${recever_id}`,function(res){
       
       res.forEach(m => {
     let cls = m._SenderID === sender_id ? "me" : "them";

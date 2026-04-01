@@ -188,7 +188,7 @@ function loginUser(){
     }
 
     $.ajax({
-        url:"http://localhost:5064/api/Auth/Login",
+        url:"http://masterx.runasp.net/api/Auth/Login",
         type:"POST",
         contentType:"application/json",
         data: JSON.stringify({
@@ -220,7 +220,7 @@ function sendCode(){
     }
 
     $.ajax({
-        url:"http://localhost:5064/api/Auth/send-code",
+        url:"http://masterx.runasp.net/api/Auth/send-code",
         type:"POST",
         contentType:"application/json",
         data: JSON.stringify({ email }),
@@ -244,7 +244,7 @@ function verifyCode(){
     }
 
     $.ajax({
-        url:"http://localhost:5064/api/Auth/verify-code",
+        url:"http://masterx.runasp.net/api/Auth/verify-code",
         type:"POST",
         contentType:"application/json",
         data: JSON.stringify({  code }),
@@ -282,7 +282,7 @@ function registerUser(){
 
     let sendData = (img)=>{
         $.ajax({
-            url:"http://localhost:5064/api/Auth/Register",
+            url:"http://masterx.runasp.net/api/Auth/Register",
             type:"POST",
             contentType:"application/json",
             data: JSON.stringify({
